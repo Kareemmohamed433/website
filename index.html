@@ -87,6 +87,20 @@
         .applicant-item:last-child {
             border-bottom: none;
         }
+        .clear-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            width: 100%;
+        }
+        .clear-btn:hover {
+            background: #d32f2f;
+        }
     </style>
 </head>
 <body>
@@ -183,14 +197,27 @@
     <div class="applicants-list" id="applicantsList">
         <h3>قائمة المتقدمين</h3>
         <div id="applicantsContainer"></div>
+        <button id="clearStorage" class="clear-btn">مسح جميع البيانات المحفوظة</button>
     </div>
 
     <script>
-        // Array to store applicants (for demo purposes)
-        let applicants = [];
-
+        // Key for localStorage
+        const STORAGE_KEY = 'visaApplicants';
+        
+        // Function to get applicants from localStorage
+        function getApplicants() {
+            const storedData = localStorage.getItem(STORAGE_KEY);
+            return storedData ? JSON.parse(storedData) : [];
+        }
+        
+        // Function to save applicants to localStorage
+        function saveApplicants(applicants) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(applicants));
+        }
+        
         // Function to display applicants
         function displayApplicants() {
+            const applicants = getApplicants();
             const container = document.getElementById('applicantsContainer');
             container.innerHTML = ''; // Clear previous content
 
@@ -207,6 +234,7 @@
                     <p><strong>الجنسية:</strong> ${applicant.nationality}</p>
                     <p><strong>رقم الجواز:</strong> ${applicant.passport_number}</p>
                     <p><strong>رقم المرجع:</strong> ${applicant.reference}</p>
+                    <p><strong>تاريخ التسجيل:</strong> ${new Date(applicant.timestamp).toLocaleString('ar-EG')}</p>
                 `;
                 container.appendChild(applicantDiv);
             });
@@ -229,11 +257,14 @@
                 travel_date: document.getElementById('travel_date').value,
                 return_date: document.getElementById('return_date').value,
                 purpose: document.getElementById('purpose').value,
-                reference: `VS-${Math.floor(Math.random() * 10000)}` // Generate reference number
+                reference: `VS-${Math.floor(Math.random() * 10000)}`, // Generate reference number
+                timestamp: new Date().getTime() // Add timestamp
             };
             
-            // Add to applicants array
+            // Get existing applicants and add new one
+            const applicants = getApplicants();
             applicants.push(formData);
+            saveApplicants(applicants);
             
             // Display result message
             const resultDiv = document.getElementById('testResult');
@@ -247,12 +278,21 @@
             // Update applicants list
             displayApplicants();
             
-            // Log form data (for debugging)
-            console.log('بيانات النموذج:', formData);
-            
-            // Optionally reset the form
+            // Reset the form
             document.getElementById('visaTestForm').reset();
         });
+        
+        // Clear storage button
+        document.getElementById('clearStorage').addEventListener('click', function() {
+            if (confirm('هل أنت متأكد أنك تريد مسح جميع بيانات المتقدمين؟')) {
+                localStorage.removeItem(STORAGE_KEY);
+                displayApplicants();
+                alert('تم مسح جميع البيانات بنجاح');
+            }
+        });
+        
+        // Display applicants when page loads
+        document.addEventListener('DOMContentLoaded', displayApplicants);
     </script>
 </body>
 </html>
