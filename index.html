@@ -69,6 +69,24 @@
             text-align: center;
             display: none;
         }
+        .applicants-list {
+            margin-top: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .applicants-list h3 {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .applicant-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .applicant-item:last-child {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -162,11 +180,43 @@
         </form>
     </div>
 
+    <div class="applicants-list" id="applicantsList">
+        <h3>قائمة المتقدمين</h3>
+        <div id="applicantsContainer"></div>
+    </div>
+
     <script>
+        // Array to store applicants (for demo purposes)
+        let applicants = [];
+
+        // Function to display applicants
+        function displayApplicants() {
+            const container = document.getElementById('applicantsContainer');
+            container.innerHTML = ''; // Clear previous content
+
+            if (applicants.length === 0) {
+                container.innerHTML = '<p>لا يوجد متقدمين حتى الآن</p>';
+                return;
+            }
+
+            applicants.forEach((applicant, index) => {
+                const applicantDiv = document.createElement('div');
+                applicantDiv.className = 'applicant-item';
+                applicantDiv.innerHTML = `
+                    <p><strong>الاسم:</strong> ${applicant.full_name}</p>
+                    <p><strong>الجنسية:</strong> ${applicant.nationality}</p>
+                    <p><strong>رقم الجواز:</strong> ${applicant.passport_number}</p>
+                    <p><strong>رقم المرجع:</strong> ${applicant.reference}</p>
+                `;
+                container.appendChild(applicantDiv);
+            });
+        }
+
+        // Form submission handler
         document.getElementById('visaTestForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            // جمع بيانات النموذج
+            // Collect form data
             const formData = {
                 full_name: document.getElementById('full_name').value,
                 nationality: document.getElementById('nationality').value,
@@ -178,20 +228,30 @@
                 phone: document.getElementById('phone').value,
                 travel_date: document.getElementById('travel_date').value,
                 return_date: document.getElementById('return_date').value,
-                purpose: document.getElementById('purpose').value
+                purpose: document.getElementById('purpose').value,
+                reference: `VS-${Math.floor(Math.random() * 10000)}` // Generate reference number
             };
             
-            // عرض نتيجة الاختبار
+            // Add to applicants array
+            applicants.push(formData);
+            
+            // Display result message
             const resultDiv = document.getElementById('testResult');
             resultDiv.style.display = 'block';
             resultDiv.innerHTML = `
                 <h3>تم استلام الطلب بنجاح</h3>
                 <p>سيتم مراجعة بياناتك وإعلامك بالنتيجة خلال 3 أيام عمل</p>
-                <p><strong>رقم المرجع:</strong> VS-${Math.floor(Math.random() * 10000)}</p>
+                <p><strong>رقم المرجع:</strong> ${formData.reference}</p>
             `;
             
-            // يمكنك هنا إضافة كود لإرسال البيانات للخادم إذا لزم الأمر
+            // Update applicants list
+            displayApplicants();
+            
+            // Log form data (for debugging)
             console.log('بيانات النموذج:', formData);
+            
+            // Optionally reset the form
+            document.getElementById('visaTestForm').reset();
         });
     </script>
 </body>
